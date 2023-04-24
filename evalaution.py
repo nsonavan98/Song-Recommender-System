@@ -1,9 +1,8 @@
 import random
-import math
 
 class precision_recall_calculator:
     
-    def __init__(self, test_data, train_data, pm, user_model, item_model,no,x):
+    def __init__(self, test_data, train_data, pm, user_model, item_model):
         self.test_data = test_data
         self.train_data = train_data
         self.user_test_sample = None
@@ -12,8 +11,7 @@ class precision_recall_calculator:
         self.model3 = item_model
         users = test_data['user_id'].unique()
         self.id_to_no = { id:no for no,id in enumerate(users) }
-        self.no = no
-        self.x = x
+
         self.isi_training_dict = {}
         self.isu_training_dict = {}
         self.pm_training_dict = {}
@@ -53,25 +51,21 @@ class precision_recall_calculator:
             #Get items for user_id from user similarity model
             print("Getting recommendations for user:%s" % user_id)
 
-            no = self.no
-            p = math.ceil(self.x * no)
-            user_sim_users,u_rats = self.model2(user_id,max(no,p))
-            #user_sim_users = user_sim_users_all[:no]
+            no = 20
+
+            user_sim_users,u_rats = self.model2(user_id,no)
             self.songs_to_rats_u[user_id] = { user_sim_users[i] : u_rats[i] for i in range(len(user_sim_users)) }
 
-            self.isu_training_dict[user_id] = list(user_sim_users[:no])
+            self.isu_training_dict[user_id] = list(user_sim_users)
 
-            user_sim_items,i_rats = self.model3(user_id,max(no,no-p))
-            #user_sim_items = user_sim_items_all[:no]
-            self.isi_training_dict[user_id] = list(user_sim_items[:no])
+            user_sim_items,i_rats = self.model3(user_id,no)
+            self.isi_training_dict[user_id] = list(user_sim_items)
             self.songs_to_rats_i[user_id] = { user_sim_items[i] : i_rats[i] for i in range(len(user_sim_items)) }
 
-            
-            
-            ui_songs = user_sim_items[:p] + user_sim_users[:no-p]
-            ui_rats = i_rats[:p] + u_rats[:no-p]
+            ui_songs = user_sim_items[:int(len(user_sim_items)/2)+1] + user_sim_users[:int(len(user_sim_users)/2)+1]
+            ui_rats = u_rats[:int(len(user_sim_items)/2)+1] + i_rats[:int(len(user_sim_users)/2)+1]
 
-            self.isui_training_dict[user_id] = ui_songs
+            self.isui_training_dict[user_id] = user_sim_items[:int(len(user_sim_items)/2)+1] + user_sim_users[:int(len(user_sim_users)/2)+1]
             self.songs_to_rats_ui[user_id] = { ui_songs[i] : ui_rats[i] for i in range(len(ui_songs)) }
 
 
@@ -88,7 +82,7 @@ class precision_recall_calculator:
     #Method to calculate the precision and recall measures
     def calculate_precision_recall(self):
         #Create cutoff list for precision and recall calculation
-        cutoff_list = list(range(1,self.no+1))
+        cutoff_list = list(range(1,21))
 
 
         #For each distinct cutoff:

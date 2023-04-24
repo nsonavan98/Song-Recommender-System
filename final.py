@@ -1,28 +1,19 @@
 import numpy as np
 import pandas as pd
-import argparse
 from sklearn.model_selection import train_test_split
 import user_class
 import item_class
 import content
 import Popularity
 
-#python3 final.py -n 30 -u 4 -s 1000 
-
-p = argparse.ArgumentParser()
-p.add_argument("-n","-no of songs",default=20,type=int)
-p.add_argument("-u","-user no",default=2,type=int)
-p.add_argument("-s","-subset of dataset",default=1000,type=int)
-p.add_argument("-x","-aggregrate percentage",default=50,type=int)
-args = vars(p.parse_args())
 
 #get the data and preposing
 
 #for collab
-song_db=pd.read_csv("rating1.csv")
+song_db=pd.read_csv("/home/niket/Desktop/rating1.csv")
 
 #for content
-song_db_2=pd.read_csv('song_data.csv')
+song_db_2=pd.read_csv('/home/niket/Downloads/song_data.csv')
 song_db_2['song']=song_db_2['title']+"-"+song_db_2['artist_name']
 
 
@@ -46,9 +37,9 @@ ix_to_songs = { i:s for i,s in enumerate(songs) }
 
 
 #user no in the dataset for which recommendations are to be given
-User_no = args["u"]
-No=args["n"] #no of songs to recommend
-x=args["x"] #percentage of item based filtering to use
+User_no = 2
+No=20 #no of songs to recommend
+x=50 #percentage of item based filtering to use
 
 User=users[User_no]
 
@@ -62,38 +53,47 @@ print("\n\n*********************************************************************
 if User not in users or len(user_data['song'].unique()) == 0:
     #for popularity
     print("Popularity based model")
-    song_db_1=pd.read_csv('triplet.csv')
-    song_db_2=pd.read_csv('song_data.csv',)
+    song_db_1=pd.read_csv('/home/niket/Desktop/triplet.csv')
+    song_db_2=pd.read_csv('/home/niket/Downloads/song_data.csv',)
     song_db=pd.merge(song_db_1,song_db_2.drop_duplicates(['song_id']),on="song_id",how="left")
     song_db['song']=song_db['title']+"-"+song_db['artist_name']
     song_grouped=song_db.groupby(['song']).agg({'listen_count':'count'}).reset_index()
     grouped_sum=song_grouped['listen_count'].sum()
     
     train_data,test_data=train_test_split(song_db_subset,test_size=.20,random_state=0)
-
+    #print(train_data)
     pm=Popularity.popularity_recommender()
     
     pm.make(train_data,'user_id','song',No)
     print(pm.recommend_songs(User))
-
+    #l=list(pm.recommend_songs(User)['song'])
+    #for i in l:
+    #    print(i)
     
 else:
+
+
+
+
 #content based filtering
-    song=[]   
+    song=[]
+    
+    
     if(len(user_data['song'].unique()) < 10):
         print("20 % Content based filtering \n")
-
+        #print("80 % 20% content \n")
     
         for i in range(len(user_data)):
           if(user_data.iloc[i,8]>3):
             song.append(user_data.iloc[i,12]) 
         content=content.content_based(song_db_2)
-
+        #song=['Yellow']
         recom,score=content.recommend_songs(song,song_db_2,int(No/5))      
         d = {'song':recom,'score':score}
         song_list=pd.DataFrame(d,index=[i for i in range(1,len(recom)+1)])
         print(song_list)
-
+        #for r in recom: 
+         #   print (r)
     
         No=int(No*4/5)
         print("\n\n**********************************************************************\n")
@@ -103,11 +103,11 @@ else:
 
     #calculating the user user similarity
     ub_obj.collab(User_no)
-
+    #print(ub_obj.similarity)
 
     #calculating user ratings for that given user
     ub_obj.predict_ratings(User_no,20,True)
-
+    #print(ub_obj.pred)
     #getting recommendations
     
     
@@ -118,7 +118,8 @@ else:
     d = {'song':songs,'score':rats}
     list_song = pd.DataFrame(d,index=[i for i in range(1,len(songs)+1)])
     print(list_song)
-
+    #for i in range(len(songs)):
+    #    print(list_song.iloc[i])
         
     print("\n\n**********************************************************************\n")
     
@@ -138,6 +139,7 @@ else:
     d =  {'song':songs,'score':rats}
     list_song = pd.DataFrame(d,index=[i for i in range(1,len(songs)+1)])
     print(list_song)
-
+    #for i in songs:
+    #    print(i)
         
     print("\n\n**********************************************************************\n")
