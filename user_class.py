@@ -80,19 +80,24 @@ class user_based:
                 
                 for l in range(min(K,len(self.similarity[0]))):
                     j = rank[len(rank) - l - 1]
+                    #print(l)
                     if(self.user_matrix[j][i]!=0):
                         sum_sim_rat+=self.similarity[u][j]*self.user_matrix[j][i]
                         sum_sim+=abs(self.similarity[u][j])
-                     
+                       # print((self.similarity[user_no][j]))
+                #print("sum",sum_sim,sum_sim_rat)
                 if(sum_sim_rat != 0 and sum_sim_rat>0):
+                    #print("yo",sum_sim_rat/sum_sim,sum_sim_rat,sum_sim)
                     self.prediction.append(sum_sim_rat/sum_sim )
 
                     if( not np.isnan(self.prediction[i])):
                          song.append(self.songs[i])
                 else:
                     self.prediction.append(self.mean_ratings[user_no])
+                    #print(self.mean_ratings[user_no])
             else:
                 self.prediction.append(0)
+        #print(self.prediction)
         return self.prediction.copy(),song
 
 # Make song prediction      
@@ -103,9 +108,18 @@ class user_based:
         user_test=self.train_data[self.train_data['user_id']==self.users[user_no]]
         history=user_test['song']
         
+        """if(len(user_test)!=0):
+            for j in range(len(user_test)):
+               # if self.prediction[songs_to_ix[user_test.iloc[j,12]]] !=self.mean_ratings[user_no]:
+                   # print("ATTENTION  ",user_test.iloc[j,8],self.prediction[songs_to_ix[user_test.iloc[j,12]]])
+                error+=abs(user_test.iloc[j,8]-self.prediction[songs_to_ix[user_test.iloc[j,12]]])
+
+            print("error",user_no,"-",error/len(user_test))
+        #error/=len(user_test)"""
         rank=np.argsort(self.prediction)
         rats=[]
-
+        #print(self.prediction)
+        #print(rank)
         for i in range(number):
             if(not (ix_to_songs[rank[len(rank)-i-1]] in history)):
                 songs.append(ix_to_songs[rank[len(rank)-i-1]])

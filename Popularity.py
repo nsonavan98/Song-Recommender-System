@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
+#import scipy as s
 from scipy import sparse
+#from .base import clone
 import math
 import csv
 
@@ -36,6 +38,7 @@ class popularity_recommender():
     user_recom['user_id']=user_id
     
     columns=user_recom.columns.tolist()
+    #print(columns,columns[-1:],columns[:-1])
     columns=['rank','song','score']
     user_recom=user_recom[columns]
     
